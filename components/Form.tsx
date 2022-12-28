@@ -17,8 +17,7 @@ export default function Form() {
 
   useEffect(() => {
     if (
-      typeof window.ethereum !== "undefined" ||
-      typeof window.web3 !== "undefined"
+      typeof window.ethereum !== "undefined"
     ) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       setProvider(provider);
