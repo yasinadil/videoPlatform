@@ -3,8 +3,6 @@ import { Web3Storage } from "web3.storage";
 import toast, { Toaster } from "react-hot-toast";
 import { ethers } from "ethers";
 import { videoPlatformAddress } from "../Config/Config";
-import { useWaitForTransaction } from "wagmi";
-import { useRouter } from "next/router";
 const videoABI = require("../ABI/videoPlatformABI.json");
 
 export default function Form() {
@@ -15,18 +13,7 @@ export default function Form() {
   const [videos, setVideos] = useState([]);
   const [hash, setHash] = useState(null);
   const [newVid, setNewVid] = useState(false);
-  const router = useRouter();
 
-  const {
-    isError,
-    isLoading: txloading,
-    isSuccess: txSuccess,
-  } = useWaitForTransaction({
-    hash: hash,
-  });
-
-  const VideoLoading = txloading;
-  const VideoMinted = txSuccess;
 
   useEffect(() => {
     if (
@@ -56,9 +43,6 @@ export default function Form() {
       const cid = await client.put(metadataFile, { wrapWithDirectory: false });
       console.log("metadatfile cid " + " " + cid);
 
-      // const resMeta = await client.get(cid); // Web3Response
-      // const Metafile = await resMeta.files(); // Web3File[]
-      // console.log(`${Metafile[0].cid} ${Metafile[0].name} ${Metafile[0].size}`);
       const urlMeta = "ipfs://" + cid + "/";
       return [name, urlMeta];
     } catch (error) {
