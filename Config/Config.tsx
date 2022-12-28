@@ -1,0 +1,1 @@
+export const videoPlatformAddress = "0x9b075c328C58B014aee641D218ec0c6A7F4f467f";
