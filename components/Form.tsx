@@ -7,19 +7,18 @@ const videoABI = require("../ABI/videoPlatformABI.json");
 
 export default function Form() {
   const [name, setName] = useState("");
-  const [fileState, setFile] = useState([]);
+  const [fileState, setFile] = useState<FileList | null>(null);
   const [metadataIPFS, setMetadataIPFS] = useState("");
   const [provider, setProvider] = useState({});
-  const [videos, setVideos] = useState([]);
+  const [videos, setVideos] = useState<string[]>([]);
   const [hash, setHash] = useState(null);
   const [newVid, setNewVid] = useState(false);
 
-
   useEffect(() => {
-    if (
-      typeof window.ethereum !== "undefined"
-    ) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(
+        window.ethereum as any
+      );
       setProvider(provider);
     }
   }, []);
@@ -27,7 +26,8 @@ export default function Form() {
   const getCid = async () => {
     // Construct with token and endpoint
     const client = new Web3Storage({
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDRiQmQzZDMzMzgyRjZjNTI0MDRlMTIyN2RDMUQ3MThhMkU2NGNEMDkiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NzE4Njk3NDUxNzAsIm5hbWUiOiJWaWRQbGF0Zm9ybSJ9.oT3kpjykVBtosuiy65avTpR0Nicy3aDqgkNzthO91Mg",
+      token:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDRiQmQzZDMzMzgyRjZjNTI0MDRlMTIyN2RDMUQ3MThhMkU2NGNEMDkiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NzE4Njk3NDUxNzAsIm5hbWUiOiJWaWRQbGF0Zm9ybSJ9.oT3kpjykVBtosuiy65avTpR0Nicy3aDqgkNzthO91Mg",
     });
     try {
       const rootCid = await client.put(fileState, { wrapWithDirectory: false });
@@ -45,13 +45,15 @@ export default function Form() {
       const urlMeta = "ipfs://" + cid + "/";
       return [name, urlMeta];
     } catch (error) {
-      console.error(error);
-      toast.error(error.message);
+      if (error instanceof Error) {
+        console.error(error);
+        toast.error(error.message);
+      }
     }
   };
 
-  const handleMint = async (name, url) => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const handleMint = async (name: string, url: string) => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum as any);
     const signer = provider.getSigner();
     let userAddress = signer.getAddress();
     let contract = new ethers.Contract(videoPlatformAddress, videoABI, signer);
@@ -74,30 +76,36 @@ export default function Form() {
     });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const handleSubmit = async () => {
     if (fileState.length == 0) {
       toast.error("No file uploaded");
     } else {
-      let [name, url] = await toast.promise(getCid(), {
+      const data = await toast.promise(getCid(), {
         loading: "Uploading Video This can take a moment... ⏳",
         success: "Video Uploaded! 🎉",
         error: "Something went wrong! 😢",
       });
 
-      console.log("url:" + " " + url);
+      if (data !== undefined) {
+        const [name, url] = data;
+        console.log(name);
+        console.log(url);
 
-      await toast.promise(handleMint(name, url), {
-        loading: "Minting your NFT... ⏳",
-        success: "NFT Minted! 🎉",
-        error: "Something went wrong! 😢",
-      });
+        await toast.promise(handleMint(name, url), {
+          loading: "Minting your NFT... ⏳",
+          success: "NFT Minted! 🎉",
+          error: "Something went wrong! 😢",
+        });
+      }
+
+      // console.log("data[0]:" + " " + data[0]);
     }
   };
 
   async function loadVids() {
-    const provider = new ethers.providers.JsonRpcProvider("https://eth-goerli.g.alchemy.com/v2/LK5riXBIuRJgosOlAvRdtxW0pZXhfTdi");
+    const provider = new ethers.providers.JsonRpcProvider(
+      "https://eth-goerli.g.alchemy.com/v2/LK5riXBIuRJgosOlAvRdtxW0pZXhfTdi"
+    );
     let contract = new ethers.Contract(
       videoPlatformAddress,
       videoABI,
@@ -127,7 +135,7 @@ export default function Form() {
               TokenVideo.split("ipfs://")[1]
             }`;
           }
-          // console.log(TokenVideo);
+
           setVideos((videos) => [...videos, TokenVideo]);
         }
       } else if (videos.length > 0) {
@@ -153,7 +161,9 @@ export default function Form() {
 
       // for(let i = 0; i < vids.length-1; i++){
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        console.error(error);
+      }
     }
   }
 
@@ -179,7 +189,9 @@ export default function Form() {
         accept="video/*"
         onChange={async (e) => {
           const files = e.target.files;
-          setFile(files);
+          if (files != null) {
+            setFile(files);
+          }
         }}
       />
       <br />

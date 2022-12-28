@@ -1,6 +1,6 @@
 import Connect from '../components/Connect';
 import Form from '../components/Form';
-const Home: NextPage = () => {
+const Home = () => {
   return (
     <div className="">
       <Connect />
