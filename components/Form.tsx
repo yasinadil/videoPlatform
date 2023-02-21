@@ -104,7 +104,7 @@ export default function Form() {
 
   async function loadVids() {
     const provider = new ethers.providers.JsonRpcProvider(
-      "https://eth-goerli.g.alchemy.com/v2/LK5riXBIuRJgosOlAvRdtxW0pZXhfTdi"
+      `https://eth-goerli.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMYAPI}`
     );
     let contract = new ethers.Contract(
       videoPlatformAddress,
@@ -121,7 +121,6 @@ export default function Form() {
       if (vids.length > 0 && videos.length == 0) {
         for (let i = vids.length - 1; i >= 0; i--) {
           let url = vids[i].url;
-          // console.log(url);
 
           if (url.startsWith("ipfs://")) {
             url = `https://w3s.link/ipfs/${url.split("ipfs://")[1]}`;
